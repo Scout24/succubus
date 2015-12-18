@@ -30,7 +30,7 @@ class Daemon(object):
         self.group = self.config.get('group')
         self.pidfile = os.path.abspath(pidfile)
 
-    def create_pidfile(self):
+    def get_pidfile_path(self):
         if self.pidfile:
             # FIXME: Remember ABSOLUTE path
             self.pid_dir = os.path.dirname(self.pidfile)
@@ -142,7 +142,7 @@ class Daemon(object):
         self.set_gid()
         # Create pidfile with new user/group. This ensures we will be able
         # to delete the file when shutting down.
-        self.create_pidfile()
+        self.get_pidfile_path()
         self.daemonize()
         try:
             self.run()
