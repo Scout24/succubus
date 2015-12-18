@@ -1,17 +1,21 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from __future__ import print_function, absolute_import, division
 
 import os
 import sys
 import time
 import atexit
-from signal import SIGTERM, SIGKILL
+
 from pwd import getpwnam
 from grp import getgrnam
+from signal import SIGTERM, SIGKILL
 
 
 class Daemon(object):
-    """Subclass the Daemon class and override the run() method"""
+    """Subclass this Daemon class and override the run() method"""
+
     def __init__(self,
                  pidfile=None,
                  stdin='/dev/null',
@@ -22,8 +26,8 @@ class Daemon(object):
         self.stderr = os.path.abspath(stderr)
         self.config = {}
         self.load_configuration()
-        self.user = self.config.get('runtime')
-        self.group = self.config.get('runtime')
+        self.user = self.config.get('user')
+        self.group = self.config.get('group')
         self.pidfile = os.path.abspath(pidfile)
 
     def create_pidfile(self):
@@ -31,32 +35,31 @@ class Daemon(object):
             # FIXME: Remember ABSOLUTE path
             self.pid_dir = os.path.dirname(self.pidfile)
         else:
-            print("No pidfile given when calling daemon constructor")
+            print('No pidfile given when calling daemon constructor')
             sys.exit(1)
 
-    def set_uid_gid(self):
+    def set_gid(self):
+        """Change the group of the running process"""
         if self.group:
             gid = getgrnam(self.group).gr_gid
             try:
                 os.setgid(gid)
             except Exception:
-                print("Unable to switch ownership to " +
-                       self.user +
-                       ":" +
-                       self.group +
-                       ". Did you start the daemon as root?")
+                message = ("Unable to switch ownership to {0}:{1}. " +
+                           "Did you start the daemon as root?")
+                print(message.format(self.user, self.group))
                 sys.exit(1)
 
+    def set_uid(self):
+        """Change the user of the running process"""
         if self.user:
             uid = getpwnam(self.user).pw_uid
             try:
                 os.setuid(uid)
             except Exception:
-                print("Unable to switch ownership to " +
-                       self.user +
-                       ":" +
-                       self.group +
-                       ". Did you start the daemon as root?")
+                message = ('Unable to switch ownership to {0}:{1}. ' +
+                           'Did you start the daemon as root?')
+                print(message.format(self.user, self.group))
                 sys.exit(1)
 
     def action(self):
@@ -70,7 +73,7 @@ class Daemon(object):
         elif param1 == 'status':
             return self.status()
         else:
-            print("Unknown command: {0}".format(param1))
+            print('Unknown command: {0}'.format(param1))
             return 2
 
     def load_configuration(self):
@@ -88,10 +91,10 @@ class Daemon(object):
             if pid > 0:
                 sys.exit(0)
         except OSError, e:
-            sys.stderr.write("fork #1 failed: %d (%s)\n" %
+            sys.stderr.write('fork #1 failed: %d (%s)\n' %
                              (e.errno, e.strerror))
             sys.exit(1)
-        os.chdir("/")
+        os.chdir('/')
         os.setsid()
         # FIXME: 0?
         os.umask(0)
@@ -100,7 +103,7 @@ class Daemon(object):
             if pid > 0:
                 sys.exit(0)
         except OSError, e:
-            sys.stderr.write("fork #2 failed: %d (%s)\n" %
+            sys.stderr.write('fork #2 failed: %d (%s)\n' %
                              (e.errno, e.strerror))
             sys.exit(1)
         sys.stdin.close()
@@ -143,7 +146,7 @@ class Daemon(object):
         try:
             self.run()
         except Exception:
-            self.logger.exception("Exception while running the daemon:")
+            self.logger.exception('Exception while running the daemon:')
         return 0
 
     def reliable_kill(self):
@@ -154,7 +157,7 @@ class Daemon(object):
                 time.sleep(0.1)
         except OSError, err:
             err = str(err)
-            if "No such process" in err:
+            if 'No such process' in err:
                 if os.path.exists(self.pidfile):
                     self.delpid()
                 return 0
@@ -163,7 +166,7 @@ class Daemon(object):
                 return 1
 
         # No 'no such process' exception -> process is still running.
-        sys.stderr.write("Had to kill the process with SIGKILL")
+        sys.stderr.write('Had to kill the process with SIGKILL')
         os.kill(self.pid, SIGKILL)
         return 0
 
@@ -173,7 +176,7 @@ class Daemon(object):
             return self.reliable_kill()
         else:
             # FIXME: misleading error message
-            message = "Daemon not running, nothing to do.\n"
+            message = 'Daemon not running, nothing to do.\n'
             sys.stderr.write(message)
             return 0
 
