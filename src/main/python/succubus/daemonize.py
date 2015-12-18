@@ -187,31 +187,5 @@ class Daemon(object):
         raise NotImplementedError
 
     def status(self):
+        """Determine the status of the daemon"""
         raise NotImplementedError
-
-
-import logging
-from logging.handlers import WatchedFileHandler
-
-
-class MyDaemon(Daemon):
-    def __init__(self, *args, **kwargs):
-        super(MyDaemon, self).__init__(*args, **kwargs)
-    #    self.config_dir = config_dir
-
-    def run(self):
-        """Overwrite the run function of the daemon class"""
-        handler = WatchedFileHandler('succubus.log')
-        self.logger = logging.getLogger('succubus')
-        self.logger.addHandler(handler)
-        while True:
-            time.sleep(1)
-            self.logger.warn("hello world")
-
-def main():
-    daemon = MyDaemon(pidfile='succubus.pid')
-    daemon.action()
-
-
-if __name__ == "__main__":
-    main()
