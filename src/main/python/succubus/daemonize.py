@@ -135,10 +135,11 @@ class Daemon(object):
     def start(self):
         """Start the daemon"""
         if self._already_running():
-            message = "pidfile %s already exist. Daemon already running?\n"
+            message = 'pidfile %s already exist. Daemon already running?\n'
             sys.stderr.write(message % self.pidfile)
             return 0
-        self.set_uid_gid()
+        self.set_uid()
+        self.set_gid()
         # Create pidfile with new user/group. This ensures we will be able
         # to delete the file when shutting down.
         self.create_pidfile()
