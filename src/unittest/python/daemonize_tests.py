@@ -4,4 +4,4 @@ from succubus import Daemon
 
 class TestDaemonize(TestCase):
     def test_one(self):
-        a = Daemon(pidfile='foo')
+        a = Daemon(pid_file='foo')

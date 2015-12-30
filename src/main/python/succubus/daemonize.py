@@ -17,7 +17,7 @@ class Daemon(object):
     """Subclass this Daemon class and override the run() method"""
 
     def __init__(self,
-                 pidfile=None,
+                 pid_file=None,
                  stdin='/dev/null',
                  stdout='/dev/null',
                  stderr='/dev/null'):
@@ -28,12 +28,14 @@ class Daemon(object):
         self.load_configuration()
         self.user = self.config.get('user')
         self.group = self.config.get('group')
-        self.pidfile = os.path.abspath(pidfile)
+        if not pid_file:
+            raise Exception("You did not provide a pid file")
+        self.pid_file = os.path.abspath(pid_file)
 
-    def get_pidfile_path(self):
-        if self.pidfile:
+    def get_pid_file_path(self):
+        if self.pid_file:
             # FIXME: Remember ABSOLUTE path
-            self.pid_dir = os.path.dirname(self.pidfile)
+            self.pid_dir = os.path.dirname(self.pid_file)
         else:
             print('No pidfile given when calling daemon constructor')
             sys.exit(1)
@@ -111,15 +113,15 @@ class Daemon(object):
         sys.stderr.close()
         atexit.register(self.delpid)
         pid = os.getpid()
-        file(self.pidfile, 'w+').write("%s\n" % pid)
+        file(self.pid_file, 'w+').write("%s\n" % pid)
 
     def delpid(self):
-        """Remove the pidfile from filesystem"""
-        os.remove(self.pidfile)
+        """Remove the pid_file from filesystem"""
+        os.remove(self.pid_file)
 
     def _already_running(self):
         try:
-            self.pid = int(open(self.pidfile).read().strip())
+            self.pid = int(open(self.pid_file).read().strip())
         except IOError:
             self.pid = None
             return False
@@ -135,14 +137,14 @@ class Daemon(object):
     def start(self):
         """Start the daemon"""
         if self._already_running():
-            message = 'pidfile %s already exist. Daemon already running?\n'
-            sys.stderr.write(message % self.pidfile)
+            message = 'pid file %s already exists. Daemon already running?\n'
+            sys.stderr.write(message % self.pid_file)
             return 0
         self.set_uid()
         self.set_gid()
-        # Create pidfile with new user/group. This ensures we will be able
+        # Create pid file with new user/group. This ensures we will be able
         # to delete the file when shutting down.
-        self.get_pidfile_path()
+        self.get_pid_file_path()
         self.daemonize()
         try:
             self.run()
@@ -159,7 +161,7 @@ class Daemon(object):
         except OSError, err:
             err = str(err)
             if 'No such process' in err:
-                if os.path.exists(self.pidfile):
+                if os.path.exists(self.pid_file):
                     self.delpid()
                 return 0
             else:
