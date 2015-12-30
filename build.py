@@ -30,6 +30,9 @@ def set_properties(project):
     project.set_property('install_dependencies_upgrade', True)
     project.build_depends_on("unittest2")
 
+    # TODO: Write more tests
+    project.set_property('coverage_break_build', False)
+
 
 @init(environments='teamcity')
 def set_properties_for_teamcity_builds(project):
