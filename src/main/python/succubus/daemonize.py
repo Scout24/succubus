@@ -32,14 +32,6 @@ class Daemon(object):
             raise Exception("You did not provide a pid file")
         self.pid_file = os.path.abspath(pid_file)
 
-    def get_pid_file_path(self):
-        if self.pid_file:
-            # FIXME: Remember ABSOLUTE path
-            self.pid_dir = os.path.dirname(self.pid_file)
-        else:
-            print('No pidfile given when calling daemon constructor')
-            sys.exit(1)
-
     def set_gid(self):
         """Change the group of the running process"""
         if self.group:
@@ -144,7 +136,6 @@ class Daemon(object):
         self.set_gid()
         # Create pid file with new user/group. This ensures we will be able
         # to delete the file when shutting down.
-        self.get_pid_file_path()
         self.daemonize()
         try:
             self.run()
