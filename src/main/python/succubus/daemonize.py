@@ -55,8 +55,15 @@ class Daemon(object):
                            'Did you start the daemon as root?')
                 print(message.format(self.user, self.group))
                 sys.exit(1)
+                
+    @staticmethod            
+    def usage():
+        sys.stdout.write("Usage: %s {start|stop|restart|status}" % sys.argv[0])
+        return 2
 
     def action(self):
+        if len(sys.argv) == 1:
+            return self.usage()
         param1 = sys.argv.pop(1)
         if 'start' == param1:
             return self.start()
@@ -67,8 +74,7 @@ class Daemon(object):
         elif param1 == 'status':
             return self.status()
         else:
-            print('Unknown command: {0}'.format(param1))
-            return 2
+            return self.usage()
 
     def load_configuration(self):
         """Set up self.config if needed"""
