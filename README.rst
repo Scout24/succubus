@@ -34,7 +34,7 @@ Examples
 
 
     def main():
-        daemon = MyDaemon(pidfile='succubus.pid')
+        daemon = MyDaemon(pid_file='succubus.pid')
         daemon.action()
 
 
