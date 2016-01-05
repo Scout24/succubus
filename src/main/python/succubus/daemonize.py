@@ -141,6 +141,7 @@ class Daemon(object):
             self.run()
         except Exception:
             self.logger.exception('Exception while running the daemon:')
+            return 1
         return 0
 
     def reliable_kill(self):
@@ -185,4 +186,6 @@ class Daemon(object):
 
     def status(self):
         """Determine the status of the daemon"""
-        raise NotImplementedError
+        if self._already_running():
+            return 0
+        return 3
