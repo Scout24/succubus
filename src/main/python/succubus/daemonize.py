@@ -55,10 +55,10 @@ class Daemon(object):
                            'Did you start the daemon as root?')
                 print(message.format(self.user, self.group))
                 sys.exit(1)
-                
-    @staticmethod            
+
+    @staticmethod
     def usage():
-        sys.stdout.write("Usage: %s {start|stop|restart|status}" % sys.argv[0])
+        sys.stdout.write("Usage: %s {start|stop|restart|status}\n" % sys.argv[0])
         return 2
 
     def action(self):
