@@ -1,3 +1,13 @@
+.. image:: https://travis-ci.org/ImmobilienScout24/succubus.svg
+    :alt: Travis build status image
+    :align: left
+    :target: https://travis-ci.org/ImmobilienScout24/succubus
+
+.. image:: https://coveralls.io/repos/ImmobilienScout24/succubus/badge.svg?branch=master
+  :alt: Coverage status
+  :target: https://coveralls.io/github/ImmobilienScout24/succubus?branch=master
+
+
 ========
 succubus
 ========
