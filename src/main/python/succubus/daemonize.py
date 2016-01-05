@@ -187,5 +187,8 @@ class Daemon(object):
     def status(self):
         """Determine the status of the daemon"""
         if self._already_running():
+            message = "is running... (pid  {0})".format(self.pid)
+            sys.stdout.write(message)
             return 0
+        sys.stdout.write("is stopped")
         return 3
