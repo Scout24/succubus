@@ -13,6 +13,7 @@ Examples
 .. code-block:: python
 
     import logging
+    import sys
 
     from logging.handlers import WatchedFileHandler
 
@@ -35,7 +36,7 @@ Examples
 
     def main():
         daemon = MyDaemon(pid_file='succubus.pid')
-        daemon.action()
+        sys.exit(daemon.action())
 
 
     if __name__ == '__main__':
