@@ -96,7 +96,6 @@ class Daemon(object):
             sys.exit(1)
         os.chdir('/')
         os.setsid()
-        # FIXME: 0?
         os.umask(0)
         try:
             pid = os.fork()
@@ -106,9 +105,14 @@ class Daemon(object):
             sys.stderr.write('fork #2 failed: %d (%s)\n' %
                              (e.errno, e.strerror))
             sys.exit(1)
+        # to properly close the fd's, we need to use sys and os:
+        # http://chromano.me/2011/05/23/starting-python-daemons-via-ssh.html
         sys.stdin.close()
+        os.close(0)
         sys.stdout.close()
+        os.close(1)
         sys.stderr.close()
+        os.close(2)
         atexit.register(self.delpid)
         pid = os.getpid()
         file(self.pid_file, 'w+').write("%s\n" % pid)
