@@ -7,6 +7,7 @@ import os
 import sys
 import time
 import atexit
+import psutil
 
 from pwd import getpwnam
 from grp import getgrnam
@@ -127,14 +128,9 @@ class Daemon(object):
         except IOError:
             self.pid = None
             return False
-        try:
-            os.kill(self.pid, 0)
-        except OSError as exc:
-            if exc.errno == 3:
-                # "process does not exist"-error
-                return False
-            raise
-        return True
+        if psutil.pid_exists(self.pid):
+            return True
+        return False
 
     def start(self):
         """Start the daemon"""
