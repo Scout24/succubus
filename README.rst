@@ -52,6 +52,7 @@ Examples
 Succubus implements the usual init script actions (start, stop, restart, status) in Python. So your init script can look like this:
         
 .. code-block:: bash
+
     #!/bin/bash
     /usr/bin/my_succubus_daemon $1 --foo=42
 
