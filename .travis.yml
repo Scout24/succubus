@@ -1,6 +1,6 @@
 language: python
 python:
-# There seems to be some issue with pyp3 + psutils. Travis says
+# There seems to be some issue with pyp3 + psutil. Travis says
 #   Error importing unittest: unable to load extension module [...]
 #       /home/travis/virtualenv/pypy3-2.4.0/site-packages/psutil/_psutil_linux.pypy3-24.so: undefined symbol: PyModule_GetState
 #  - "pypy3"
