@@ -30,6 +30,7 @@ def set_properties(project):
 def set_properties(project):
     project.set_property('install_dependencies_upgrade', True)
     project.build_depends_on("unittest2")
+    project.build_depends_on("mock")
     project.depends_on("psutil")
 
     # TODO: Write more tests

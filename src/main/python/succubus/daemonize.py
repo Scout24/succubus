@@ -22,6 +22,10 @@ class Daemon(object):
                  stdin='/dev/null',
                  stdout='/dev/null',
                  stderr='/dev/null'):
+        if len(sys.argv) == 1:
+            return self.usage()
+        self.param1 = sys.argv.pop(1)
+
         self.stdin = os.path.abspath(stdin)
         self.stdout = os.path.abspath(stdout)
         self.stderr = os.path.abspath(stderr)
@@ -63,16 +67,13 @@ class Daemon(object):
         return 2
 
     def action(self):
-        if len(sys.argv) == 1:
-            return self.usage()
-        param1 = sys.argv.pop(1)
-        if 'start' == param1:
+        if self.param1 == 'start':
             return self.start()
-        elif 'stop' == param1:
+        elif self.param1 == 'stop':
             return self.stop()
-        elif 'restart' == param1:
+        elif self.param1 == 'restart':
             return self.restart()
-        elif param1 == 'status':
+        elif self.param1 == 'status':
             return self.status()
         else:
             return self.usage()
