@@ -22,8 +22,11 @@ Examples
 
 .. code-block:: python
 
+    #!/usr/bin/env python
+
     import logging
     import sys
+    import time
 
     from logging.handlers import WatchedFileHandler
 
@@ -33,7 +36,8 @@ Examples
     class MyDaemon(Daemon):
         def run(self):
             """Overwrite the run function of the Daemon class"""
-            handler = WatchedFileHandler('succubus.log')
+            # TODO: don't log to /tmp except for example code
+            handler = WatchedFileHandler('/tmp/succubus.log')
             self.logger = logging.getLogger('succubus')
             self.logger.addHandler(handler)
             while True:
