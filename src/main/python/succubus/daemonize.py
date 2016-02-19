@@ -23,7 +23,8 @@ class Daemon(object):
                  stdout='/dev/null',
                  stderr='/dev/null'):
         if len(sys.argv) == 1:
-            return self.usage()
+            self.param1 = None
+            return
         self.param1 = sys.argv.pop(1)
 
         self.stdin = os.path.abspath(stdin)
