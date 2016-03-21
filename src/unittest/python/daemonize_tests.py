@@ -23,7 +23,7 @@ class TestDaemonize(TestCase):
 
         mock_sys.argv = ['foo', 'start', '--config=xyz']
 
-        a = MyDaemon(pid_file='foo.pid')
+        MyDaemon(pid_file='foo.pid')
 
     @patch("succubus.daemonize.os.setgid")
     def test_set_gid_translates_group_name(self, mock_setgid):

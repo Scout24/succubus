@@ -37,6 +37,7 @@ class Daemon(object):
         if not pid_file:
             raise Exception("You did not provide a pid file")
         self.pid_file = os.path.abspath(pid_file)
+        self.pid = None
 
     def set_gid(self):
         """Change the group of the running process"""
@@ -155,7 +156,7 @@ class Daemon(object):
     def reliable_kill(self):
         # TODO: make the timeout configurable
         try:
-            for count in range(100):
+            for _ in range(100):
                 os.kill(self.pid, SIGTERM)
                 time.sleep(0.1)
         except OSError as err:
