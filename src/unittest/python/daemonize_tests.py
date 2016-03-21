@@ -24,3 +24,21 @@ class TestDaemonize(TestCase):
         mock_sys.argv = ['foo', 'start', '--config=xyz']
 
         a = MyDaemon(pid_file='foo.pid')
+
+    @patch("succubus.daemonize.os.setgid")
+    def test_set_gid_translates_group_name(self, mock_setgid):
+        daemon = Daemon(pid_file="foo")
+        daemon.group = "root"
+
+        daemon.set_gid()
+
+        mock_setgid.assert_called_with(0)
+
+    @patch("succubus.daemonize.os.setuid")
+    def test_set_uid_translates_user_name(self, mock_setuid):
+        daemon = Daemon(pid_file="foo")
+        daemon.user = "root"
+
+        daemon.set_uid()
+
+        mock_setuid.assert_called_with(0)
