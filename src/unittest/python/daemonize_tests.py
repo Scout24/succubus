@@ -1,8 +1,9 @@
 from __future__ import print_function, absolute_import, division
 
 from unittest2 import TestCase
-from mock import patch
+from mock import patch, call
 import os
+import signal
 import subprocess
 import tempfile
 
@@ -82,6 +83,8 @@ class TestDaemonize(TestCase):
 
             daemon = Daemon(pid_file=fake_pidfile.name)
             self.assertEqual(daemon._already_running(), True)
+            # _already_running must set the self.pid.
+            self.assertEqual(daemon.pid, os.getpid())
         finally:
             os.unlink(fake_pidfile.name)
 
@@ -111,3 +114,40 @@ class TestDaemonize(TestCase):
             self.assertEqual(daemon._already_running(), False)
         finally:
             os.unlink(fake_pidfile.name)
+
+    @patch("succubus.daemonize.time.sleep")
+    @patch("succubus.daemonize.os.kill")
+    @patch("succubus.daemonize.sys")
+    def test_reliable_kill_actually_kills(self, mock_sys, mock_kill, mock_sleep):
+        mock_sys.argv = ['foo', 'bar']
+        daemon = Daemon(pid_file="foo")
+        daemon.pid = 1234
+
+        # Pretend the second os.kill() fails because the process terminated.
+        mock_kill.side_effect = [None, OSError("No such process")]
+
+        retval = daemon.reliable_kill()
+
+        self.assertEqual(retval, 0)
+        self.assertEqual(mock_kill.call_count, 2)
+        self.assertEqual(mock_sleep.call_count, 1)
+        expected_call = call(1234, signal.SIGTERM)
+        mock_kill.assert_has_calls([expected_call, expected_call])
+
+    @patch("succubus.daemonize.time.sleep")
+    @patch("succubus.daemonize.os.kill")
+    @patch("succubus.daemonize.sys")
+    def test_reliable_kill_kills_stuck_processes(self, mock_sys, mock_kill, mock_sleep):
+        """When a process ignores SIGTERM, it must be killed with SIGKILL"""
+        mock_sys.argv = ['foo', 'bar']
+        daemon = Daemon(pid_file="foo")
+        daemon.pid = 1234
+
+        mock_kill.side_effect = None
+
+        retval = daemon.reliable_kill()
+
+        self.assertEqual(retval, 0)
+        # Must have tried 100 times with SIGTERM and 1 time with SIGKILL.
+        self.assertEqual(mock_kill.call_count, 101)
+        mock_kill.assert_any_call(1234, signal.SIGKILL)
