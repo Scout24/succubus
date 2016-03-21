@@ -2,6 +2,8 @@ from __future__ import print_function, absolute_import, division
 
 from unittest2 import TestCase
 from mock import patch
+import os
+import tempfile
 
 from succubus import Daemon
 
@@ -42,3 +44,28 @@ class TestDaemonize(TestCase):
         daemon.set_uid()
 
         mock_setuid.assert_called_with(0)
+
+    @patch("succubus.daemonize.sys")
+    def test_daemon_insists_on_pidfile(self, mock_sys):
+        mock_sys.argv = ['foo', 'bar']
+        self.assertRaisesRegexp(Exception, "You did not provide a pid file",
+                                Daemon)
+
+    @patch("succubus.daemonize.sys")
+    def test_daemon_remembers_abspath_of_pidfile(self, mock_sys):
+        mock_sys.argv = ['foo', 'bar']
+        daemon = Daemon(pid_file="foo")
+        self.assertTrue(os.path.isabs(daemon.pid_file))
+
+    @patch("succubus.daemonize.sys")
+    def test_delpid_really_deletes_pidfile(self, mock_sys):
+        mock_sys.argv = ['foo', 'bar']
+
+        fake_pidfile = tempfile.NamedTemporaryFile()
+        try:
+            daemon = Daemon(pid_file=fake_pidfile.name)
+            daemon.delpid()
+            self.assertFalse(os.path.exists(fake_pidfile.name))
+        finally:
+            if os.path.exists(fake_pidfile.name):
+                os.unlink(fake_pidfile.name)
