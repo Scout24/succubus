@@ -4,6 +4,7 @@ from unittest2 import TestCase
 from mock import patch, call
 import os
 import signal
+import six
 import subprocess
 import tempfile
 
@@ -78,7 +79,8 @@ class TestDaemonize(TestCase):
 
         fake_pidfile = tempfile.NamedTemporaryFile()
         try:
-            fake_pidfile.write("{pid}\n".format(pid=os.getpid()))
+            content = "{pid}\n".format(pid=os.getpid())
+            fake_pidfile.write(six.b(content))
             fake_pidfile.flush()
 
             daemon = Daemon(pid_file=fake_pidfile.name)
@@ -107,7 +109,8 @@ class TestDaemonize(TestCase):
 
         fake_pidfile = tempfile.NamedTemporaryFile()
         try:
-            fake_pidfile.write("{pid}\n".format(pid=test_pid))
+            content = "{pid}\n".format(pid=test_pid)
+            fake_pidfile.write(six.b(content))
             fake_pidfile.flush()
 
             daemon = Daemon(pid_file=fake_pidfile.name)
