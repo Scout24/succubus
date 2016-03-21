@@ -3,6 +3,7 @@ from __future__ import print_function, absolute_import, division
 from unittest2 import TestCase
 from mock import patch
 import os
+import subprocess
 import tempfile
 
 from succubus import Daemon
@@ -69,3 +70,44 @@ class TestDaemonize(TestCase):
         finally:
             if os.path.exists(fake_pidfile.name):
                 os.unlink(fake_pidfile.name)
+
+    @patch("succubus.daemonize.sys")
+    def test_already_running_detects_running_process(self, mock_sys):
+        mock_sys.argv = ['foo', 'bar']
+
+        fake_pidfile = tempfile.NamedTemporaryFile()
+        try:
+            fake_pidfile.write("{pid}\n".format(pid=os.getpid()))
+            fake_pidfile.flush()
+
+            daemon = Daemon(pid_file=fake_pidfile.name)
+            self.assertEqual(daemon._already_running(), True)
+        finally:
+            os.unlink(fake_pidfile.name)
+
+    @patch("succubus.daemonize.sys")
+    def test_already_running_handles_missing_pidfile(self, mock_sys):
+        mock_sys.argv = ['foo', 'bar']
+
+        daemon = Daemon(pid_file="/a_nonexisting_pidfile")
+        self.assertEqual(daemon._already_running(), False)
+
+    @patch("succubus.daemonize.sys")
+    def test_already_running_handles_missing_process(self, mock_sys):
+        mock_sys.argv = ['foo', 'bar']
+
+        # The test assumes that the OS will not reuse test_pid before
+        # this function is finished.
+        test_process = subprocess.Popen(['true'])
+        test_pid = test_process.pid
+        test_process.wait()
+
+        fake_pidfile = tempfile.NamedTemporaryFile()
+        try:
+            fake_pidfile.write("{pid}\n".format(pid=test_pid))
+            fake_pidfile.flush()
+
+            daemon = Daemon(pid_file=fake_pidfile.name)
+            self.assertEqual(daemon._already_running(), False)
+        finally:
+            os.unlink(fake_pidfile.name)
