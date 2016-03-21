@@ -123,13 +123,20 @@ class TestDaemonize(TestCase):
     @patch("succubus.daemonize.sys")
     def test_reliable_kill_actually_kills(self, mock_sys, mock_kill, mock_sleep):
         mock_sys.argv = ['foo', 'bar']
-        daemon = Daemon(pid_file="foo")
+        fake_pidfile = tempfile.NamedTemporaryFile()
+        daemon = Daemon(pid_file=fake_pidfile.name)
         daemon.pid = 1234
 
         # Pretend the second os.kill() fails because the process terminated.
         mock_kill.side_effect = [None, OSError("No such process")]
 
-        retval = daemon.reliable_kill()
+        try:
+            retval = daemon.reliable_kill()
+        finally:
+            pid_file_exists = os.path.exists(fake_pidfile.name)
+            if pid_file_exists:
+                os.unlink(fake_pid_file.name)
+            self.assertFalse(pid_file_exists)
 
         self.assertEqual(retval, 0)
         self.assertEqual(mock_kill.call_count, 2)
@@ -154,3 +161,22 @@ class TestDaemonize(TestCase):
         # Must have tried 100 times with SIGTERM and 1 time with SIGKILL.
         self.assertEqual(mock_kill.call_count, 101)
         mock_kill.assert_any_call(1234, signal.SIGKILL)
+
+    @patch("succubus.daemonize.time.sleep")
+    @patch("succubus.daemonize.os.kill")
+    @patch("succubus.daemonize.sys")
+    def test_reliable_kill_reportss_permission_problems(self, mock_sys, mock_kill, mock_sleep):
+        """If the process cannot be killed, an error must be reported
+
+        This typically happens when the user does not have sufficient
+        permissions to kill the process.
+        """
+        mock_sys.argv = ['foo', 'bar']
+        daemon = Daemon(pid_file="foo")
+        daemon.pid = 1234
+
+        mock_kill.side_effect = OSError("Insufficient permissions")
+
+        retval = daemon.reliable_kill()
+
+        self.assertEqual(retval, 1)
