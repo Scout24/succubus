@@ -39,6 +39,29 @@ class TestDaemonize(TestCase):
 
         mock_setgid.assert_called_with(0)
 
+    @patch("succubus.daemonize.sys")
+    @patch("succubus.daemonize.os.setgid")
+    def test_set_gid_exits_on_error(self, mock_setgid, mock_sys):
+        mock_sys.argv = ['foo', 'bar']
+        daemon = Daemon(pid_file="foo")
+        daemon.group = "root"
+        mock_setgid.side_effect = Exception
+
+        daemon.set_gid()
+
+        mock_sys.exit.assert_called_once_with(1)
+
+    @patch("succubus.daemonize.sys")
+    @patch("succubus.daemonize.os.setgid")
+    def test_set_gid_does_nothing_by_default(self, mock_setgid, mock_sys):
+        mock_sys.argv = ['foo', 'bar']
+        daemon = Daemon(pid_file="foo")
+
+        daemon.set_gid()
+
+        self.assertEqual(mock_setgid.call_count, 0)
+        self.assertEqual(mock_sys.exit.call_count, 0)
+
     @patch("succubus.daemonize.os.setuid")
     def test_set_uid_translates_user_name(self, mock_setuid):
         daemon = Daemon(pid_file="foo")
@@ -47,6 +70,29 @@ class TestDaemonize(TestCase):
         daemon.set_uid()
 
         mock_setuid.assert_called_with(0)
+
+    @patch("succubus.daemonize.sys")
+    @patch("succubus.daemonize.os.setuid")
+    def test_set_uid_exits_on_error(self, mock_setuid, mock_sys):
+        mock_sys.argv = ['foo', 'bar']
+        daemon = Daemon(pid_file="foo")
+        daemon.user = "root"
+        mock_setuid.side_effect = Exception
+
+        daemon.set_uid()
+
+        mock_sys.exit.assert_called_once_with(1)
+
+    @patch("succubus.daemonize.sys")
+    @patch("succubus.daemonize.os.setuid")
+    def test_set_uid_does_nothing_by_default(self, mock_setuid, mock_sys):
+        mock_sys.argv = ['foo', 'bar']
+        daemon = Daemon(pid_file="foo")
+
+        daemon.set_uid()
+
+        self.assertEqual(mock_setuid.call_count, 0)
+        self.assertEqual(mock_sys.exit.call_count, 0)
 
     @patch("succubus.daemonize.sys")
     def test_daemon_insists_on_pidfile(self, mock_sys):
