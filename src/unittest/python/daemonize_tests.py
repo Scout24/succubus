@@ -1,7 +1,7 @@
 from __future__ import print_function, absolute_import, division
 
 from unittest2 import TestCase
-from mock import patch, call
+from mock import patch, call, Mock
 import os
 import signal
 import six
@@ -226,3 +226,60 @@ class TestDaemonize(TestCase):
         retval = daemon.reliable_kill()
 
         self.assertEqual(retval, 1)
+
+    @patch("succubus.daemonize.sys")
+    def test_stop_terminates_a_running_process(self, mock_sys):
+        mock_sys.argv = ['foo', 'bar']
+        daemon = Daemon(pid_file="foo")
+
+        daemon._already_running = Mock()
+        daemon._already_running.return_value = True
+        daemon.reliable_kill = Mock()
+        daemon.reliable_kill.return_value = 123
+
+        retval = daemon.stop()
+
+        daemon._already_running.assert_called_once_with()
+        daemon.reliable_kill.assert_called_once_with()
+        self.assertEqual(retval, 123)
+
+    @patch("succubus.daemonize.sys")
+    def test_stop_handles_missing_process(self, mock_sys):
+        mock_sys.argv = ['foo', 'bar']
+        daemon = Daemon(pid_file="foo")
+
+        daemon._already_running = Mock()
+        daemon._already_running.return_value = False
+        daemon.reliable_kill = Mock()
+
+        retval = daemon.stop()
+
+        daemon._already_running.assert_called_once_with()
+        self.assertEqual(daemon.reliable_kill.call_count, 0)
+        self.assertEqual(retval, 0)
+
+    @patch("succubus.daemonize.sys")
+    def test_status_reports_running_process(self, mock_sys):
+        mock_sys.argv = ['foo', 'bar']
+        daemon = Daemon(pid_file="foo")
+
+        daemon._already_running = Mock()
+        daemon._already_running.return_value = True
+
+        retval = daemon.status()
+
+        daemon._already_running.assert_called_once_with()
+        self.assertEqual(retval, 0)
+
+    @patch("succubus.daemonize.sys")
+    def test_status_handles_missing_process(self, mock_sys):
+        mock_sys.argv = ['foo', 'bar']
+        daemon = Daemon(pid_file="foo")
+
+        daemon._already_running = Mock()
+        daemon._already_running.return_value = False
+
+        retval = daemon.status()
+
+        daemon._already_running.assert_called_once_with()
+        self.assertEqual(retval, 3)
