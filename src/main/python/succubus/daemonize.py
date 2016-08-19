@@ -180,8 +180,9 @@ class Daemon(object):
     def reliable_kill(self):
         # TODO: make the timeout configurable
         try:
+            os.kill(self.pid, SIGTERM)
             for _ in range(100):
-                os.kill(self.pid, SIGTERM)
+                os.kill(self.pid, 0)
                 time.sleep(0.1)
         except OSError as err:
             err = str(err)

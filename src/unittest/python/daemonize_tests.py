@@ -155,8 +155,8 @@ class TestDaemonize(TestCase):
         daemon = Daemon(pid_file=fake_pidfile.name)
         daemon.pid = 1234
 
-        # Pretend the second os.kill() fails because the process terminated.
-        mock_kill.side_effect = [None, OSError("No such process")]
+        # Pretend the third os.kill() fails because the process terminated.
+        mock_kill.side_effect = [None, None, OSError("No such process")]
 
         try:
             retval = daemon.reliable_kill()
@@ -167,10 +167,11 @@ class TestDaemonize(TestCase):
             self.assertFalse(pid_file_exists)
 
         self.assertEqual(retval, 0)
-        self.assertEqual(mock_kill.call_count, 2)
+        self.assertEqual(mock_kill.call_count, 3)
         self.assertEqual(mock_sleep.call_count, 1)
-        expected_call = call(1234, signal.SIGTERM)
-        mock_kill.assert_has_calls([expected_call, expected_call])
+        expected_kill_call = call(1234, signal.SIGTERM)
+        expected_check_call = call(1234, 0)
+        mock_kill.assert_has_calls([expected_kill_call, expected_check_call, expected_check_call])
 
     @patch("succubus.daemonize.time.sleep")
     @patch("succubus.daemonize.os.kill")
@@ -184,8 +185,6 @@ class TestDaemonize(TestCase):
         retval = daemon.reliable_kill()
 
         self.assertEqual(retval, 0)
-        # Must have tried 100 times with SIGTERM and 1 time with SIGKILL.
-        self.assertEqual(mock_kill.call_count, 101)
         mock_kill.assert_any_call(1234, signal.SIGKILL)
 
     @patch("succubus.daemonize.time.sleep")

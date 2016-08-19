@@ -15,6 +15,9 @@ class MyDaemon(Daemon):
             time.sleep(1)
 
     def shutdown(self):
+        # Pretend to do something that takes a while.
+        time.sleep(1.1)
+
         # Proof that this function completed successfully
         pid_dir = os.path.dirname(self.pid_file)
         success_file = os.path.join(pid_dir, "success")
