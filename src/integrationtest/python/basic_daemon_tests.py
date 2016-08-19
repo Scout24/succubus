@@ -32,6 +32,8 @@ class BasicDaemonTests(unittest2.TestCase):
 
         # Daemon must be stopped as soon as "stop" returns.
         self.assertRaises(Exception, subprocess.check_call, [daemon, "status"])
+        # Daemon must remove its PID file on clean shutdown.
+        self.assertFalse(os.path.exists(self.pid_file))
         # Calling "stop" again should not do anything.
         subprocess.check_call([daemon, "stop"])
 
