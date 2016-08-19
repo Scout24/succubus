@@ -4,6 +4,7 @@
 from __future__ import print_function, absolute_import, division
 
 import os
+import signal
 import sys
 import time
 import atexit
@@ -84,6 +85,22 @@ class Daemon(object):
         """Set up self.config if needed"""
         pass
 
+    def shutdown(self):
+        """Clean up when daemon is about to terminate
+
+        This function allows your daemon to perform cleanup work just before
+        terminating. It is called no matter why the daemon terminates (calling
+        "stop" on the init script, self.run() raising an exception....).
+        """
+        pass
+
+    def _shutdown(self):
+        try:
+            self.shutdown()
+        except Exception:
+            self.logger.exception("Error in daemon shutdown:")
+        self.delpid()
+
     def daemonize(self):
         """
         Do the UNIX double-fork magic, see Stevens' "Advanced
@@ -117,9 +134,16 @@ class Daemon(object):
         os.close(1)
         sys.stderr.close()
         os.close(2)
-        atexit.register(self.delpid)
+
         pid = os.getpid()
         file(self.pid_file, 'w+').write("%s\n" % pid)
+
+        # Handle SIGTERM the same as SIGINT: raise a KeyboardInterrupt.
+        signal.signal(signal.SIGTERM, signal.getsignal(signal.SIGINT))
+        # atexit functions are "not called when the program is killed by a
+        # signal not handled by Python". But since SIGTERM is now handled, the
+        # atexit functions do get called.
+        atexit.register(self._shutdown)
 
     def delpid(self):
         """Remove the pid_file from filesystem"""
