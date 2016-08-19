@@ -15,6 +15,6 @@ install:
   - pip install coveralls
   - pyb install_dependencies
   
-script: "pyb verify analyze"
+script: "pyb verify analyze -X"
 after_success:
   - coveralls --verbose
