@@ -189,7 +189,7 @@ class TestDaemonize(TestCase):
 
     @patch("succubus.daemonize.time.sleep")
     @patch("succubus.daemonize.os.kill")
-    def test_reliable_kill_reportss_permission_problems(self, mock_kill, mock_sleep):
+    def test_reliable_kill_reports_permission_problems(self, mock_kill, mock_sleep):
         """If the process cannot be killed, an error must be reported
 
         This typically happens when the user does not have sufficient
