@@ -138,8 +138,9 @@ class Daemon(object):
         pid = os.getpid()
         file(self.pid_file, 'w+').write("%s\n" % pid)
 
-        # Handle SIGTERM the same as SIGINT: raise a KeyboardInterrupt.
-        signal.signal(signal.SIGTERM, signal.getsignal(signal.SIGINT))
+        def handler(*args):
+            raise BaseException("SIGTERM was caught")
+        signal.signal(signal.SIGTERM, handler)
         # atexit functions are "not called when the program is killed by a
         # signal not handled by Python". But since SIGTERM is now handled, the
         # atexit functions do get called.
