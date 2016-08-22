@@ -15,7 +15,8 @@ class ShutdownDaemonTests(unittest2.TestCase):
         os.environ['PID_FILE'] = self.pid_file
 
     def tearDown(self):
-        shutil.rmtree(self.temp_dir)
+        #shutil.rmtree(self.temp_dir)
+        print(self.temp_dir)
 
     def test_daemon_start_status_stop(self):
         daemon = "./src/integrationtest/python/shutdown_daemon.py"
