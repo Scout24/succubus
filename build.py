@@ -35,6 +35,7 @@ def set_properties(project):
 
     # TODO: Write more tests
     project.set_property('coverage_break_build', False)
+    project.set_property('integrationtest_parallel', True)
 
 
 @init(environments='teamcity')
