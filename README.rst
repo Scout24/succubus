@@ -36,13 +36,15 @@ Examples
     class MyDaemon(Daemon):
         def run(self):
             """Overwrite the run function of the Daemon class"""
+            while True:
+                time.sleep(1)
+                self.logger.warn('Hello world')
+
+        def setup_logging(self):
             # TODO: don't log to /tmp except for example code
             handler = WatchedFileHandler('/tmp/succubus.log')
             self.logger = logging.getLogger('succubus')
             self.logger.addHandler(handler)
-            while True:
-                time.sleep(1)
-                self.logger.warn('Hello world')
 
 
     def main():

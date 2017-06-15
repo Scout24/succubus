@@ -252,3 +252,53 @@ class TestDaemonize(TestCase):
 
         daemon._already_running.assert_called_once_with()
         self.assertEqual(retval, 3)
+
+class TestSetupLogging(TestCase):
+    @patch("succubus.daemonize.SysLogHandler")
+    @patch("succubus.daemonize.logging")
+    def test_logger_exists_and_has_a_handler(self, mock_logging, mock_sysloghandler):
+        daemon = Daemon(pid_file="foo")
+
+        daemon.setup_logging()
+
+        self.assertTrue(daemon.logger.handlers)
+
+    @patch("succubus.daemonize.SysLogHandler")
+    @patch("succubus.daemonize.logging")
+    @patch("succubus.daemonize.os")
+    def test_uses_dev_log_if_available(self, mock_os, mock_logging, mock_sysloghandler):
+        daemon = Daemon(pid_file="foo")
+        mock_os.path.exists.return_value = True
+
+        daemon.setup_logging()
+
+        mock_sysloghandler.assert_called_with('/dev/log')
+
+    @patch("succubus.daemonize.SysLogHandler")
+    @patch("succubus.daemonize.logging")
+    @patch("succubus.daemonize.os")
+    def test_uses_defaults_if_dev_log_unavailable(self, mock_os, mock_logging, mock_sysloghandler):
+        daemon = Daemon(pid_file="foo")
+        mock_os.path.exists.return_value = False
+
+        daemon.setup_logging()
+
+        # SysLogHandler defaults to using UDP to localhost:514
+        mock_sysloghandler.assert_called_with()
+
+    def test_setup_logging_called_at_right_time(self):
+        # daemon.setup_logging must be called after daemon.set_uid/set_gid
+        # and before daemon.daemonize.
+        daemon = Daemon(pid_file="foo")
+        daemon._already_running = lambda: False
+        daemon.set_uid = Mock()
+        daemon.set_gid = Mock()
+        daemon.setup_logging = Mock()
+        daemon.setup_logging.side_effect = ZeroDivisionError
+        daemon.daemonize = Mock()
+
+        self.assertRaises(ZeroDivisionError, daemon.start)
+
+        daemon.set_uid.assert_called()
+        daemon.set_gid.assert_called()
+        daemon.daemonize.assert_not_called()

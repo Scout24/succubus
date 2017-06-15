@@ -3,6 +3,8 @@
 
 from __future__ import print_function, absolute_import, division
 
+from logging.handlers import SysLogHandler
+import logging
 import os
 import signal
 import sys
@@ -85,6 +87,22 @@ class Daemon(object):
     def load_configuration(self):
         """Set up self.config if needed"""
         pass
+
+    def setup_logging(self):
+        """Set up self.logger
+
+        This function is called after load_configuration() and after changing
+        to new user/group IDs (if configured). Logging to syslog using the
+        root logger is configured by default, you can override this method if
+        you want something else.
+        """
+        self.logger = logging.getLogger()
+
+        if os.path.exists('/dev/log'):
+            handler = SysLogHandler('/dev/log')
+        else:
+            handler = SysLogHandler()
+        self.logger.addHandler(handler)
 
     def shutdown(self):
         """Clean up when daemon is about to terminate
@@ -169,6 +187,9 @@ class Daemon(object):
             return 0
         self.set_gid()
         self.set_uid()
+        # Create log files (if configured) with the new user/group. Creating
+        # them as root would allow symlink exploits.
+        self.setup_logging()
         # Create pid file with new user/group. This ensures we will be able
         # to delete the file when shutting down.
         self.daemonize()
