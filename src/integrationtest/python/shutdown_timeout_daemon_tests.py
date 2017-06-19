@@ -37,7 +37,7 @@ class ShutdownTimeoutTests(unittest2.TestCase):
         # reliable_kill() must give the process 1.4 seconds to shut down...
         self.assertGreater(shutdown_time, 1.4)
         # ...but not much more than that.
-        self.assertLess(shutdown_time, 1.6)
+        self.assertLess(shutdown_time, 1.7)
 
         # Daemon must be stopped from init script point of view.
         self.assertRaises(Exception, subprocess.check_call, [daemon, "status"])
