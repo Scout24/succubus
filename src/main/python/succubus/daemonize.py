@@ -148,11 +148,9 @@ class Daemon(object):
         # to properly close the fd's, we need to use sys and os:
         # http://chromano.me/2011/05/23/starting-python-daemons-via-ssh.html
         sys.stdin.close()
-        os.close(0)
         sys.stdout.close()
-        os.close(1)
         sys.stderr.close()
-        os.close(2)
+        os.closerange(0, 3)
 
         pid = os.getpid()
         open(self.pid_file, 'w+').write("%s\n" % pid)
