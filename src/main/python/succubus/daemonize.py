@@ -155,7 +155,7 @@ class Daemon(object):
         os.close(2)
 
         pid = os.getpid()
-        file(self.pid_file, 'w+').write("%s\n" % pid)
+        open(self.pid_file, 'w+').write("%s\n" % pid)
 
         def handler(*args):
             raise BaseException("SIGTERM was caught")
