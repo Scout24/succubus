@@ -153,7 +153,8 @@ class Daemon(object):
         os.closerange(0, 3)
 
         pid = os.getpid()
-        open(self.pid_file, 'w+').write("%s\n" % pid)
+        with open(self.pid_file, 'w+') as fp:
+            fp.write("%s\n" % pid)
 
         def handler(*args):
             raise BaseException("SIGTERM was caught")
