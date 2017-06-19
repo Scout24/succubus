@@ -28,6 +28,7 @@ def set_properties(project):
 
 @init
 def set_properties(project):
+    project.set_property('integrationtest_inherit_environment', True)
     project.set_property('install_dependencies_upgrade', True)
     project.build_depends_on("unittest2")
     project.build_depends_on("mock")
