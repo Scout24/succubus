@@ -6,7 +6,9 @@
 .. image:: https://coveralls.io/repos/ImmobilienScout24/succubus/badge.svg?branch=master
   :alt: Coverage status
   :target: https://coveralls.io/github/ImmobilienScout24/succubus?branch=master
-
+=======================================================
+This project is DEPRECATED and not any longer supported
+=======================================================
 
 ========
 succubus
